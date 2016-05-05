@@ -8,7 +8,8 @@ typedef void(*voidFuncPtrTM1638)(uint8_t);
 template<typename STROBE, typename CLK, typename DATA>
 	class TM1638 {
 	public:
-  
+		static const uint8_t digits[];
+
 		static void init() {
 			STROBE::SetOutput();
 			CLK::SetOutput();
@@ -96,8 +97,7 @@ template<typename STROBE, typename CLK, typename DATA>
 			ACTIVATE          = 0x8f
 		};
 
-		static const uint8_t digits[];
-
+		
   
 		static voidFuncPtrTM1638 inputHandler;
   
