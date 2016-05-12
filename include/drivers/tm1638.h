@@ -11,10 +11,10 @@ template<typename STROBE, typename CLK, typename DATA>
 		static const uint8_t digits[];
 
 		static void init() {
-			STROBE::SetOutput();
-			CLK::SetOutput();
-			DATA::SetOutput();
-			STROBE::Set();
+			STROBE::setOutput();
+			CLK::setOutput();
+			DATA::setOutput();
+			STROBE::set();
 			IssueCommand(Commands::ACTIVATE);
 			Reset();
 		}
@@ -36,10 +36,10 @@ template<typename STROBE, typename CLK, typename DATA>
   
 		static void SetLed(uint8_t ledNumber, uint8_t value) {
 			IssueCommand(Commands::WRITE_SINGLE);
-			STROBE::Clear();
+			STROBE::clear();
 			Write(0xC1 + (ledNumber << 1));
 			Write(value);
-			STROBE::Set();
+			STROBE::set();
 		}
 	
 		static void Display(uint32_t number)
@@ -56,10 +56,10 @@ template<typename STROBE, typename CLK, typename DATA>
 		static void DisplayDigit(uint8_t position, uint8_t intValue)
 		{
 			IssueCommand(Commands::WRITE_SINGLE);
-			STROBE::Clear();
+			STROBE::clear();
 			Write(0xC0 + (position << 1));
 			Write(digits[intValue]);
-			STROBE::Set();
+			STROBE::set();
 		}
   
 		static void ResetDisplay()
@@ -67,23 +67,23 @@ template<typename STROBE, typename CLK, typename DATA>
 			for (uint8_t i = 0; i < 8; i++)
 			{
 				IssueCommand(Commands::WRITE_SINGLE);
-				STROBE::Clear();
+				STROBE::clear();
 				Write(0xC0 + (i << 1));
 				Write(0x00);
-				STROBE::Set(); 
+				STROBE::set(); 
 			}
 		}
 		
 		static void Reset()
 		{
 			IssueCommand(Commands::WRITE_CONSECUTIVE);
-			STROBE::Clear();
+			STROBE::clear();
 			Write(0xC0); 
 			for (uint8_t i = 0; i < 16; i++)
 			{
 				Write(0x00);
 			}
-			STROBE::Set(); 
+			STROBE::set(); 
 		}
   
   
@@ -108,9 +108,9 @@ template<typename STROBE, typename CLK, typename DATA>
   
 		static void IssueCommand(Commands cmd)
 		{
-			STROBE::Clear();
+			STROBE::clear();
 			Write(static_cast <uint8_t>(cmd));
-			STROBE::Set();
+			STROBE::set();
 		}
   
 		static void WriteData(uint8_t  value)
@@ -118,11 +118,11 @@ template<typename STROBE, typename CLK, typename DATA>
 		
 			if (value == 1)
 			{
-				DATA::Set();
+				DATA::set();
 			}
 			else
 			{
-				DATA::Clear();
+				DATA::clear();
 			}
 		}
   
@@ -131,7 +131,7 @@ template<typename STROBE, typename CLK, typename DATA>
 			for (uint8_t i = 0; i < 8; i++)
 			{
 				WriteData((data & (1 << i)) != 0);
-				CLK::PulseHigh();
+                CLK::pulseHigh();
 			}
 		}
 		
@@ -140,26 +140,26 @@ template<typename STROBE, typename CLK, typename DATA>
 			uint8_t value = 0;
 			for (uint8_t i = 0; i < 8; ++i)
 			{
-				CLK::Set();
-				value |= DATA::Read() << i;
-				CLK::Clear();
+				CLK::set();
+				value |= DATA::read() << i;
+				CLK::clear();
 			}
 			return value;
 		}
 		
 		static uint8_t ReadKey()
 		{
-			STROBE::Clear();
+			STROBE::clear();
 			Write(static_cast <uint8_t>(Commands::READ));
-			DATA::SetInput();
+			DATA::setInput();
 			uint8_t buttons = 0;
 			for (uint8_t i = 0; i < 4; i++)
 			{
 				uint8_t byteRead = Read();
 				buttons |= (byteRead << i);
 			}
-			DATA::SetOutput();
-			STROBE::Set();
+			DATA::setOutput();
+			STROBE::set();
 			return buttons;
 		}
 	};
