@@ -54,7 +54,7 @@ public:
         IssueCommand(Commands::WRITE_SINGLE);
         STROBE::clear();
         Write(0xC0 + (position << 1));
-        Write(font[character + 32]);
+        Write(font[character - 32]);
         STROBE::set();
     }
     
@@ -139,12 +139,9 @@ private:
 template <typename TM1638>
 class TMPrinter {
 public:
-    static void Print(uint8_t intValue) {
-        //ResetDisplay();
-        for (auto i = 0; i < 8 && intValue > 0; i++)
-        {
-            TM1638::DisplayDigit(i, (intValue % 10));
-            intValue /= 10;
+    static void print(const std::string& string) {
+        for (auto index=0; index < string.length() && index < 8; ++index) {
+            TM1638::DisplayDigit(7 - index, string[index]);
         }
     }
 };
