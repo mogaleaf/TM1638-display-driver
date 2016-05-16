@@ -124,6 +124,22 @@ private:
     }
 };
 
+
+template <typename TM1638>
+class TMPrinter {
+public:
+    static void Print(uint8_t intValue) {
+        //ResetDisplay();
+        for (auto i = 0; i < 8 && intValue > 0; i++)
+        {
+            TM1638::DisplayDigit(i, (intValue % 10));
+            intValue /= 10;
+        }
+    }
+};
+
+
+
 template <typename STROBE, typename CLK, typename DATA> const uint8_t TM1638<STROBE, CLK, DATA>::digits[] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f};
 template <typename STROBE, typename CLK, typename DATA> voidFuncPtrTM1638 TM1638<STROBE, CLK, DATA>::inputHandler;
 
