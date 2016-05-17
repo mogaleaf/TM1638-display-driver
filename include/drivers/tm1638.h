@@ -141,7 +141,7 @@ class TMPrinter {
 public:
     static void print(const std::string& string) {
         for (auto index=0; index < string.length() && index < 8; ++index) {
-            TM1638::DisplayDigit(7 - index, string[index]);
+            TM1638::DisplayDigit(index, string[index]);
         }
     }
 };
