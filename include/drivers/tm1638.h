@@ -2,6 +2,10 @@
 #include <cstdint>
 #include <string>
 
+namespace etl
+{
+
+
 typedef void (*voidFuncPtrTM1638)(uint8_t);
 
 //0,4,5
@@ -16,28 +20,28 @@ public:
         CLK::setOutput();
         DATA::setOutput();
         STROBE::set();
-        IssueCommand(Commands::ACTIVATE);
-        Reset();
+        issueCommand(Commands::ACTIVATE);
+        reset();
     }
 
-    static void SetInputHandler(voidFuncPtrTM1638 handler) {
+    static void setInputHandler(voidFuncPtrTM1638 handler) {
         static os_timer_t timer;
         inputHandler = handler;
-        os_timer_setfn(&timer, Refresh, NULL);
+        os_timer_setfn(&timer, refresh, NULL);
         os_timer_arm(&timer, 1, 1);
     }
 
-    static void SetLeds(uint8_t value) {
+    static void setLeds(uint8_t value) {
         for (auto i = 0; i < 8; i++) {
-            SetLed(i, (value & (1 << i)) != 0);
+            setLed(i, (value & (1 << i)) != 0);
         }
     }
 
-    static void SetLed(uint8_t ledNumber, uint8_t value) {
-        IssueCommand(Commands::WRITE_SINGLE);
+    static void setLed(uint8_t ledNumber, uint8_t value) {
+        issueCommand(Commands::WRITE_SINGLE);
         STROBE::clear();
-        Write(0xC1 + (ledNumber << 1));
-        Write(value);
+        write(0xC1 + (ledNumber << 1));
+        write(value);
         STROBE::set();
     }
     /*
@@ -50,31 +54,31 @@ public:
     }
     */
    
-    static void DisplayDigit(uint8_t position, char character) {
-        IssueCommand(Commands::WRITE_SINGLE);
+    static void display(uint8_t position, char character) {
+        issueCommand(Commands::WRITE_SINGLE);
         STROBE::clear();
-        Write(0xC0 + (position << 1));
-        Write(font[character - 32]);
+        write(0xC0 + (position << 1));
+        write(font[character - 32]);
         STROBE::set();
     }
     
 
-    static void ResetDisplay() {
+    static void resetDisplay() {
         for (uint8_t i = 0; i < 8; i++) {
-            IssueCommand(Commands::WRITE_SINGLE);
+            issueCommand(Commands::WRITE_SINGLE);
             STROBE::clear();
-            Write(0xC0 + (i << 1));
-            Write(0x00);
+            write(0xC0 + (i << 1));
+            write(0x00);
             STROBE::set();
         }
     }
 
-    static void Reset() {
-        IssueCommand(Commands::WRITE_CONSECUTIVE);
+    static void reset() {
+        issueCommand(Commands::WRITE_CONSECUTIVE);
         STROBE::clear();
-        Write(0xC0);
+        write(0xC0);
         for (uint8_t i = 0; i < 16; i++) {
-            Write(0x00);
+            write(0x00);
         }
         STROBE::set();
     }
@@ -92,25 +96,25 @@ private:
 
     static voidFuncPtrTM1638 inputHandler;
 
-    static void Refresh(void* arg) {
+    static void refresh(void* arg) {
         uint8_t key;
-        inputHandler(ReadKey());
+        inputHandler(readKey());
     }
 
-    static void IssueCommand(Commands cmd) {
+    static void issueCommand(Commands cmd) {
         STROBE::clear();
-        Write(static_cast<uint8_t>(cmd));
+        write(static_cast<uint8_t>(cmd));
         STROBE::set();
     }
 
-    static void Write(uint8_t data) {
+    static void write(uint8_t data) {
         for (auto bitIndex = 0; bitIndex < 8; ++bitIndex) {
             DATA::set((data & (1 << bitIndex)) != 0);
             CLK::pulseHigh();
         }
     }
 
-    static uint8_t Read() {
+    static uint8_t read() {
         uint8_t value = 0;
         for (auto bitIndex = 0; bitIndex < 8; ++bitIndex) {
             CLK::set();
@@ -120,13 +124,13 @@ private:
         return value;
     }
 
-    static uint8_t ReadKey() {
+    static uint8_t readKey() {
         STROBE::clear();
-        Write(static_cast<uint8_t>(Commands::READ));
+        write(static_cast<uint8_t>(Commands::READ));
         DATA::setInput();
         uint8_t buttons = 0;
         for (auto bitIndex = 0; bitIndex < 4; ++bitIndex) {
-            auto byteRead = Read();
+            auto byteRead = read();
             buttons |= (byteRead << bitIndex);
         }
         DATA::setOutput();
@@ -141,7 +145,7 @@ class TMPrinter {
 public:
     static void print(const std::string& string) {
         for (auto index=0; index < string.length() && index < 8; ++index) {
-            TM1638::DisplayDigit(index, string[index]);
+            TM1638::display(index, string[index]);
         }
     }
 };
@@ -164,3 +168,4 @@ template <typename Strobe, typename Clk, typename Data> const uint8_t TM1638<Str
     0b01110011 /*p*/, 0b01100111 /*q*/, 0b01010000 /*r*/, 0b01101101 /*s*/, 0b01111000 /*t*/, 0b00011100 /*u*/, 0b00101010 /*v*/, 0b00011101 /*w*/,
     0b01110110 /*x*/, 0b01101110 /*y*/, 0b01000111 /*z*/, 0b01000110 /*{*/, 0b00000110 /*|*/, 0b01110000 /*}*/, 0b00000001 /*~*/ };
 
+}
